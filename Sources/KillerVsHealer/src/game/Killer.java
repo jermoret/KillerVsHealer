@@ -112,8 +112,8 @@ public class Killer extends GameFrame implements KeyListener {
 		frmKillerVsHealer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		// Chargement de l'image du pantin depuis le package killer.images
-		String imgPath = "images/casualty.png";
-		String imgTouchPath = "images/casualtyTouched.png";
+		String imgPath = "../killer/images/casualty.png";
+		String imgTouchPath = "../killer/images/casualtyTouched.png";
     	try {
 			casualty = ImageIO.read(getClass().getResourceAsStream(imgPath));
 			casualtyTouched = ImageIO.read(getClass().getResourceAsStream(imgTouchPath));
