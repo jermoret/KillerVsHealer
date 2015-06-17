@@ -1,6 +1,7 @@
-package killer;
+package game;
 
 import interfaces.Round;
+
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,43 +13,48 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
+
 import java.awt.Font;
+
 import javax.swing.JButton;
+
 import java.awt.Color;
+
 import javax.swing.SwingConstants;
+
+import actors.Victim;
+import actors.Victim.Area;
+
 import java.awt.Component;
 
-public class Killer implements KeyListener, Round {
+public class Killer extends GameFrame implements KeyListener {
 
-	private JFrame frmKillerVsHealer;
 	private JPanel animZone;
 	private JPanel panelInfo; // Informations avant lancer
-	private Round nextRound; // Prochain round (fenêtre Healer)
 	
 	private BufferedImage casualty; // Image du pantin
 	private BufferedImage casualtyTouched;
 	private double xPos, yPos; // Positions
-	private double xOffset, yOffset; // Déplacement
+	private double xOffset, yOffset; // Dï¿½placement
 	private Random rand = new Random();
 	private Timer throwTimer;
-	private Timer countdown;
 	private Timer blood;
 	private int speed;
-	private int sinceLastChangeDirectionIdx; // Pour une décéleration plus réelle
+	private int sinceLastChangeDirectionIdx; // Pour une dï¿½cï¿½leration plus rï¿½elle
 	private JLabel lblTimer;
-	private int countdownValue = 10; // Compte à rebours, en secondes
-	private boolean inProgress = false; // Jeu en cours
-	private boolean casualtyIsTouched = false; // Pantin touché
+	private boolean casualtyIsTouched = false; // Pantin touchï¿½
 	
-	// Dégats
-	private int legDamage, armDamage, bodyDamage, headDamage = 0;
-
+	// Dï¿½gats
+	//private int legDamage, armDamage, bodyDamage, headDamage = 0;
+	private Victim victim = new Victim();
+	
 	// Variables du mouvement
 	private final int BASE_SPEED = 15;
 	private final int DECELERATION_INTERVAL = 12;
@@ -61,10 +67,10 @@ public class Killer implements KeyListener, Round {
 	}
 
 	/**
-	 * Place le pantin au milieu de la fenêtre
+	 * Place le pantin au milieu de la fenï¿½tre
 	 */
 	private void moveCasualtyAtCenter() {
-		// Placement du pantin au milieu de la fenêtre
+		// Placement du pantin au milieu de la fenï¿½tre
     	xPos = frmKillerVsHealer.getWidth() / 2 - casualty.getWidth() / 2;
     	yPos = frmKillerVsHealer.getHeight() / 2 - casualty.getHeight() / 2;
 	}
@@ -117,7 +123,7 @@ public class Killer implements KeyListener, Round {
     	
     	moveCasualtyAtCenter();
     	
-    	// ================= Panel de déplacement du pantin ==================
+    	// ================= Panel de dï¿½placement du pantin ==================
 		animZone = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {
@@ -130,7 +136,7 @@ public class Killer implements KeyListener, Round {
 		};
 		// ===================================================================
 		
-		// ================ Timer - Déplacement du pantin ====================
+		// ================ Timer - Dï¿½placement du pantin ====================
 		throwTimer = new Timer(5, new ActionListener() {
 			
 			@Override
@@ -142,9 +148,9 @@ public class Killer implements KeyListener, Round {
 			        xOffset *= -1;  
 			        xPos = 0;
 			        if(yPos <= animZone.getHeight() / 2 - casualty.getHeight() / 2)
-			        	armDamage++;
+			        	victim.damage(1, Area.ARM);
 			        else 
-			        	bodyDamage++;
+			        	victim.damage(1, Area.BODY);
 			    }
 			    
 			    // Collision bord droit
@@ -153,9 +159,9 @@ public class Killer implements KeyListener, Round {
 			    	xOffset *= -1;
 			    	xPos = animZone.getWidth() - casualty.getWidth();
 			    	if(yPos <= animZone.getHeight() / 2 - casualty.getHeight() / 2)
-			        	armDamage++;
+			    		victim.damage(1, Area.ARM);
 			        else 
-			        	bodyDamage++;
+			        	victim.damage(1, Area.BODY);
 			    }
 
 			    // Collision bord haut
@@ -163,7 +169,7 @@ public class Killer implements KeyListener, Round {
 			    	collision();
 			        yOffset *= -1;
 			        yPos = 0;
-			        headDamage++;
+			        victim.damage(1, Area.HEAD);
 			    }
 			    
 			    // Collision bord bas
@@ -171,14 +177,14 @@ public class Killer implements KeyListener, Round {
 			    	collision();
 			    	yOffset *= -1;
 			    	yPos = animZone.getHeight() - casualty.getHeight();
-			    	legDamage++;
+			    	victim.damage(1, Area.LEG);
 			    }
 			    
-			    // Dépacement
+			    // Dï¿½pacement
 				xPos += xOffset * speed;
 			    yPos += yOffset * speed;
 			   
-			    // Décélération
+			    // Dï¿½cï¿½lï¿½ration
 			    if(sinceLastChangeDirectionIdx++ % DECELERATION_INTERVAL == 0)
 			    	speed /= 2;
 			    
@@ -193,7 +199,7 @@ public class Killer implements KeyListener, Round {
 		});
 		// ============================================================
 		
-		// =================== Compte à rebours =======================
+		// =================== Compte ï¿½ rebours =======================
 		countdown = new Timer(1000, new ActionListener() {
 			
 			@Override
@@ -220,7 +226,7 @@ public class Killer implements KeyListener, Round {
 		animZone.add(panelInfo);
 		panelInfo.setLayout(null);
 		
-		// =============  Bouton prêt ======================================
+		// =============  Bouton prï¿½t ======================================
 		JButton btnPrt = new JButton("Pr\u00EAt !");
 		btnPrt.setFocusable(false);
 		btnPrt.setFocusTraversalKeysEnabled(false);
@@ -271,35 +277,10 @@ public class Killer implements KeyListener, Round {
 	@Override
 	public void keyTyped(KeyEvent e) {}
 
-	// Méthodes de l'interface Round
-	@Override
-	public void setDamages(List<Integer> damages) {
-		headDamage = damages.get(0);
-		armDamage = damages.get(1);
-		bodyDamage = damages.get(2);
-		legDamage = damages.get(3);
-	}
-
-	@Override
-	public List<Integer> getDamages() {
-		return new ArrayList<Integer>(Arrays.asList(headDamage, armDamage, bodyDamage, legDamage));
-	}
-
 	@Override
 	public void begin() {
 		panelInfo.setVisible(true);
 		moveCasualtyAtCenter();
-		frmKillerVsHealer.setVisible(true);
-	}
-
-	@Override
-	public void end() {
-		frmKillerVsHealer.setVisible(false);
-		nextRound.begin(); 
-	}
-
-	@Override
-	public void setNextRound(Round round) {
-		nextRound = round;
+		super.begin();
 	}
 }
