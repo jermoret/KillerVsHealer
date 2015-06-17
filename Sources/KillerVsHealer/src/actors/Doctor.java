@@ -7,6 +7,8 @@ public abstract class Doctor {
 		"Brun", "Charles", "Berger", "Schmitt", "Rodriguez"};
     protected Doctor next;
     private String name;
+    protected int healVal;
+    protected String desc;
     
     public Doctor(String title, int n) {
         name = title + " " + names[n];
@@ -23,7 +25,6 @@ public abstract class Doctor {
         }
     }
     
-    //public abstract boolean canTreat(Victim v);
     public abstract void heal(Victim v);
     
     public boolean treat(Victim v) {
@@ -38,5 +39,9 @@ public abstract class Doctor {
         }
         
         return false;
+    }
+    
+    public String toString() {
+    	return name + "\n" + desc + " " + healVal;
     }
 }

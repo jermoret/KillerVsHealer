@@ -69,33 +69,49 @@ private void initialize() {
 			switch (type) {
 			case 0:
 				doctors.add(new Doctor("Médecin", r.nextInt(dnl)) {
+					{
+						desc = "baisse de";
+						healVal = r.nextInt(2) + 2;
+					}
 					@Override
 					public void heal(Victim v) {
-						v.heal(r.nextInt(2) + 2, zone);
+						v.heal(healVal, zone);
 					}
 				});
 				break;
 			case 1:
 				doctors.add(new Doctor("Chirurgien", r.nextInt(dnl)) {
+					{
+						desc = "divise de";
+						healVal = r.nextInt(2) + 2;
+					}
 					@Override
 					public void heal(Victim v) {
-						v.heal(v.getDamage(zone) / (r.nextInt(2) + 2), zone);
+						v.heal(v.getDamage(zone) / healVal, zone);
 					}
 				});
 				break;
 			case 2:
 				doctors.add(new Doctor("Sauveteur", r.nextInt(dnl)) {
+					{
+						desc = "garde en-dessous de";
+						healVal = r.nextInt(3) + 3;
+					}
 					@Override
 					public void heal(Victim v) {
-						v.heal(v.getDamage(zone) % (r.nextInt(3) + 3), zone);
+						v.heal(v.getDamage(zone) % healVal, zone);
 					}
 				});
 				break;
 			case 3:
 				doctors.add(new Doctor("Réanimateur", r.nextInt(dnl)) {
+					{
+						desc = "réanime de";
+						healVal = r.nextInt(4) + 1;
+					}
 					@Override
 					public void heal(Victim v) {
-						v.addTime(r.nextInt(4) + 1);
+						v.addTime(healVal);
 					}
 				});
 				break;
