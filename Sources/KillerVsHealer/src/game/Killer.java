@@ -50,7 +50,7 @@ public class Killer extends GameFrame implements KeyListener {
 	private int sinceLastChangeDirectionIdx; // Pour une d�c�leration plus r�elle
 	private JLabel lblTimer;
 	private boolean casualtyIsTouched = false; // Pantin touch�
-	
+        
 	// D�gats
 	//private int legDamage, armDamage, bodyDamage, headDamage = 0;
 	private Victim victim = new Victim();
@@ -62,7 +62,8 @@ public class Killer extends GameFrame implements KeyListener {
 	/**
 	 * Create the application.
 	 */
-	public Killer() {
+	public Killer(Victim v) {
+                victim = v;
 		initialize();
 	}
 
@@ -136,7 +137,7 @@ public class Killer extends GameFrame implements KeyListener {
 		};
 		// ===================================================================
 		
-		// ================ Timer - D�placement du pantin ====================
+		// ================ Timer - Déplacement du pantin ====================
 		throwTimer = new Timer(5, new ActionListener() {
 			
 			@Override
@@ -180,18 +181,19 @@ public class Killer extends GameFrame implements KeyListener {
 			    	victim.damage(1, Area.LEG);
 			    }
 			    
-			    // D�pacement
+			    // Déplacement
 				xPos += xOffset * speed;
 			    yPos += yOffset * speed;
 			   
-			    // D�c�l�ration
+			    // Décélération
 			    if(sinceLastChangeDirectionIdx++ % DECELERATION_INTERVAL == 0)
 			    	speed /= 2;
 			    
 			    if(speed == 0) { 
 			    	throwTimer.stop();
-			    	if(inProgress == false)
-			    		end();  
+			    	if(inProgress == false) {
+                                    end();  
+                                }
 			    }
 			    
 			    animZone.repaint();
@@ -199,7 +201,7 @@ public class Killer extends GameFrame implements KeyListener {
 		});
 		// ============================================================
 		
-		// =================== Compte � rebours =======================
+		// =================== Compte à rebours =======================
 		countdown = new Timer(1000, new ActionListener() {
 			
 			@Override
@@ -226,7 +228,7 @@ public class Killer extends GameFrame implements KeyListener {
 		animZone.add(panelInfo);
 		panelInfo.setLayout(null);
 		
-		// =============  Bouton pr�t ======================================
+		// =============  Bouton prêt ======================================
 		JButton btnPrt = new JButton("Pr\u00EAt !");
 		btnPrt.setFocusable(false);
 		btnPrt.setFocusTraversalKeysEnabled(false);
@@ -252,6 +254,8 @@ public class Killer extends GameFrame implements KeyListener {
 		
 		frmKillerVsHealer.addKeyListener(this);
 		frmKillerVsHealer.setVisible(true);
+                
+                casualtyIsTouched = true;
 	}
 
 	/**
@@ -283,4 +287,13 @@ public class Killer extends GameFrame implements KeyListener {
 		moveCasualtyAtCenter();
 		super.begin();
 	}
+
+    public Victim getVictim() {
+        return victim;
+    }
+
+    public boolean isCasualtyIsTouched() {
+        return casualtyIsTouched;
+    }    
+    
 }

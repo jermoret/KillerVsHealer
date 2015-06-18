@@ -16,26 +16,49 @@ import javax.swing.UIManager;
 import actors.Doctor;
 import actors.Victim;
 import interfaces.Round;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Font;
+import javax.swing.JLabel;
+import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 
 public class Healer extends GameFrame {
 	private JPanel healerList;
 	private JPanel healerChain;
+        private Container printZone;
 	private List<Doctor> doctors;
 	private List<Doctor> docChain;
 	private List<JButton> bChain;
 	private List<JButton> bList;
 	private Round nextRound; // fenetre Killer
 	private Timer healTimer;
+        private JLabel lblTimer;
 	
 	private final int NUMCHAIN = 4;
 	private final int NUMLIST = 10;
+        private JPanel panelInfo;
+        
+        private Victim victim;
 	
-	public Healer() {
+	public Healer(Victim victim) {
+                this.victim = victim;
 		initialize();
 	}
 	
 private void initialize() {
 		
+                doctors = new ArrayList<>();
+                docChain = new ArrayList<>();
+                healerList = new JPanel();
+                healerChain = new JPanel();
+                bChain = new ArrayList<>();
+                bList = new ArrayList<>();
+                printZone = new JPanel();
+                panelInfo = new JPanel();
+                frmKillerVsHealer = new JFrame();
+                
 		// Utiliser le look & feel de l'OS
 		try {
 			UIManager.setLookAndFeel(
@@ -44,7 +67,6 @@ private void initialize() {
 			    e.printStackTrace();
 		}
 		
-		frmKillerVsHealer = new JFrame();
 		frmKillerVsHealer.setResizable(false);
 		frmKillerVsHealer.setTitle("Killer Vs Healer - Healer's turn");
 		frmKillerVsHealer.setBounds(100, 100, 659, 659);
@@ -53,23 +75,15 @@ private void initialize() {
 		// ================= Panel de la chaine ==============================
 		
 		//TODO: vérifier que j'ai rien oublié dans cette section
-		bChain = new ArrayList<JButton>();
-		for (int i=0; i<NUMCHAIN; i++) {
+		/*for (int i=0; i<NUMCHAIN; i++) {
 			bChain.add(new JButton(""));
-		}
-		
-		GridLayout gridChain = new GridLayout(1,NUMCHAIN);
-		healerChain.setLayout(gridChain);
-		for (JButton b: bChain) {
-			healerChain.add(b);
-		}
-				
+		}*/
+						
 		// ===================================================================
     	
 		// ================= Generation + Panel des medecins =================
 		
 		Random r = new Random();
-		doctors = new ArrayList<Doctor>();
 		int dnl = Doctor.names.length;
 		
 		for (int i = 0; i < NUMLIST; i++) {
@@ -127,10 +141,10 @@ private void initialize() {
 				break;
 			}
 		}
-		
-		bList = new ArrayList<JButton>();
+		int i = 0;
 		for (Doctor d : doctors) {
-			healerList.add(new JButton(d.toString()));
+			bList.add(new JButton(d.toString()));
+                        healerList.add(bList.get(i++));
 			//TODO: associer les boutons de bList à leurs docteurs un peu mieux
 		}
 		
@@ -142,15 +156,35 @@ private void initialize() {
 			b.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+                                    bChain.add(b);
+                                    bList.remove(b);
+					//TODO: quand on clique, on veut que le docteur associé à ce bouton
+					//		soit enlevé de bList et ajouté à bChain (ou vice-versa)
+				}
+			});
+			healerChain.add(b);
+		}
+                
+                GridLayout gridChain = new GridLayout(1,NUMCHAIN);
+		healerChain.setLayout(gridChain);
+                
+                //TODO : Lorsqu'on clique sur un élément 
+                for (JButton b: bChain) {
+			b.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+                                    bList.add(b);
+                                    bChain.remove(b);
 					//TODO: quand on clique, on veut que le docteur associé à ce bouton
 					//		soit enlevé de bList et ajouté à bChain (ou vice-versa)
 				}
 			});
 			healerList.add(b);
 		}
+                
 		
-		// ===================================================================
-		
+		// ============================================================
+                
 		// =================== Compte à rebours =======================
 		countdown = new Timer(1000, new ActionListener() {
 			
@@ -162,36 +196,60 @@ private void initialize() {
 				}
 				//TODO: Label.setText pour un label pour afficher le compte a rebours
 				//		voir Killer.java
+                                lblTimer.setText(String.format("00:%02d", countdownValue));
 			}
 		});
 		// ============================================================
-		
-		// =============  Bouton pr�t ======================================
+                frmKillerVsHealer.getContentPane().add(printZone);
+		printZone.setLayout(null);
+                
+                lblTimer = new JLabel("00:" + String.valueOf(countdownValue));
+		lblTimer.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblTimer.setBounds(599, 605, 44, 14);
+		printZone.add(lblTimer);
+                
+		panelInfo.setBackground(Color.GRAY);
+		panelInfo.setBounds(207, 252, 243, 160);
+		printZone.add(panelInfo);
+		panelInfo.setLayout(null);
+		// =============  Bouton prêt ======================================
 		JButton btnPrt = new JButton("Pr\u00EAt !");
 		btnPrt.setFocusable(false);
 		btnPrt.setFocusTraversalKeysEnabled(false);
 		btnPrt.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//TODO: rendre visible panels de chaine et liste
-				inProgress = true;
-				countdown.start();
+                            panelInfo.setVisible(false);
+                            healerChain.setVisible(true);
+                            healerList.setVisible(true);
+                            printZone = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+                            printZone.add(healerChain);
+                            printZone.add(healerList);
+                            inProgress = true;
+                            countdown.start();
+                            frmKillerVsHealer.setVisible(true);
+                            printZone.repaint();
+                            treatVictim();
 			}
 		});
 		// =================================================================
 		
-		
+		btnPrt.setBounds(74, 108, 95, 41);
+		panelInfo.add(btnPrt);
+		btnPrt.setFont(new Font("Tahoma", Font.PLAIN, 26));
+                
+                JLabel lblCestVotreTour = new JLabel("<html>C'est \u00E0 votre tour <b>Docteur</b> ! <br>\r\nAdministrer les soins au pantin endommagé afin que celui ci puisse survivre à l'attaque de l'aggresseur. <br>\r\nD\u00E8s que vous \u00EAtez pr\u00EAt cliquez sur \"Pr\u00EAt\".</html>");
+		lblCestVotreTour.setAlignmentX(Component.CENTER_ALIGNMENT);
+		lblCestVotreTour.setVerticalAlignment(SwingConstants.TOP);
+		lblCestVotreTour.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblCestVotreTour.setBounds(10, 11, 223, 96);
+		panelInfo.add(lblCestVotreTour);
+                
 		frmKillerVsHealer.setVisible(true);
 	}
 	
-	@Override
-	public void begin() {
-		frmKillerVsHealer.setVisible(true);
-	}
-
-	@Override
+	@Override 
 	public void end() {
 		frmKillerVsHealer.setVisible(false);
-		
 		for (int i=0; i<docChain.size()-1; i++) {
 			docChain.get(i).setNext(docChain.get(i+1));
 		}
@@ -204,4 +262,13 @@ private void initialize() {
 	public void setNextRound(Round round) {
 		nextRound = round;
 	}
+        
+        protected boolean treatVictim() {
+            boolean alive = true;   // On suppose que la victime est vivante au début du traitement
+            for(Doctor d : docChain) {
+                alive = d.treat(victim);
+            }
+            
+            return alive;
+        }
 }

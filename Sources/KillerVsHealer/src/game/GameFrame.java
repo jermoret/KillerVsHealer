@@ -20,7 +20,7 @@ public abstract class GameFrame implements Round {
 	@Override
 	public void end() {
 		frmKillerVsHealer.setVisible(false);
-		nextRound.begin(); 
+         		nextRound.begin(); 
 	}
 	
 	@Override
